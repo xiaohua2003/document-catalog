@@ -1,8 +1,6 @@
 # Document Catalog
 
-A local, dependency-free searchable catalog of plain text and Markdown documents.
-It indexes a directory into an SQLite database, then supports simple token-based
-search and document inspection from the command line.
+A simple Python tool for indexing and searching local text and Markdown files. It stores documents in SQLite and provides command-line commands for importing, searching, and viewing documents.
 
 ## Commands
 
@@ -11,42 +9,56 @@ python -m doccatalog init --db catalog.sqlite
 python -m doccatalog ingest documents --db catalog.sqlite
 python -m doccatalog search pricing --db catalog.sqlite
 python -m doccatalog list --db catalog.sqlite
+python -m doccatalog show pricing.md --db catalog.sqlite
+```
+
+Run the tests with:
+
+```sh
 python -m unittest discover -s tests -v
 ```
 
-The `ingest` command is an initial import: it skips documents whose paths already
-exist in the catalog. In particular, it currently **does not update existing rows**
-when files change and **does not remove stale rows** when files disappear. This is a
-known limitation, not the intended end-state for a continuously managed collection.
+## Supported Files
 
-The project uses only Python's standard library and SQLite, with no network
-services. It is intended for a laptop or a local batch job, not for web crawling.
+- `.txt` and `.md` files encoded in UTF-8, including files with a UTF-8 BOM
+- Files in the selected directory and its subdirectories
+- Empty documents, which are stored even if they contain no searchable words
 
-## Supported inputs
+Document paths are stored relative to the input directory using forward slashes.
 
-- `.txt` and `.md`, UTF-8 (including a leading UTF-8 BOM)
-- A user-provided directory, traversed recursively
-- Paths normalized to POSIX separators for stable catalog identity
-- Empty documents retained as metadata even when they have no searchable terms
+## Importing Documents
 
-## Search behavior
+The `ingest` command imports new documents into the database. If a document with the same path is already indexed, it is skipped.
 
-Documents are tokenized into lowercased alphanumeric terms. Search uses exact
-term matches with a simple frequency score and returns the highest-scoring
-matches first. Search is purposely not a semantic retriever.
+Currently, the command does not update existing documents when their contents change or remove database records when files are deleted.
 
-## Design notes
+## Searching Documents
 
-The store has a `documents` table and a `terms` table containing term frequency
-for each document. The schema includes a content digest to enable future change
-detection, but the current import path is append-only. Each document is inserted
-in one transaction so an individual failure does not leave half-written term rows.
+Search matches individual words without case sensitivity. Documents are ranked by how frequently the matching words appear.
 
-The CLI uses JSON for machine-readable results so downstream scripts need not
-parse tables. Human-readable errors go to stderr and exit nonzero.
+Search results are returned as JSON and include the document path, title, and relevance score.
 
-## Contributing
+## Database
 
-Run unit tests with `python -m unittest discover -s tests -v` and verify the CLI
-help with `python -m doccatalog --help`. Please add tests with temporary folders
-and SQLite files, rather than requiring a real document collection.
+The SQLite database contains two main tables:
+
+- `documents`: Stores document paths, titles, content, file sizes, and SHA-256 hashes.
+- `terms`: Stores searchable words and their frequencies for each document.
+
+Each new document and its search terms are inserted within a database transaction.
+
+## Development
+
+The project uses Python's standard library and SQLite. No additional packages or external services are required.
+
+To run the tests:
+
+```sh
+python -m unittest discover -s tests -v
+```
+
+To check the available commands:
+
+```sh
+python -m doccatalog --help
+```
