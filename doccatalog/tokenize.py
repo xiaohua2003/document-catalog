@@ -26,7 +26,6 @@ def frequencies(content: str) -> dict[str, int]:
 
 
 def normalize_query(query: str) -> list[str]:
-    """For search, repeated words should not overweight a document."""
     seen = set()
     unique = []
     for term in tokens(query):

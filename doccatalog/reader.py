@@ -17,7 +17,6 @@ class DocumentSource:
 
 
 def title_from_body(path: Path, body: str) -> str:
-    """Use the first Markdown heading, or fall back to the file stem."""
     if path.suffix.lower() == ".md":
         for line in body.splitlines():
             stripped = line.strip()

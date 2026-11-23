@@ -38,10 +38,6 @@ class Catalog:
             return row is not None
 
     def add_if_missing(self, document) -> bool:
-        """Insert a new document and its search terms if document not exist.
-        If a document with the same path already exists, leave its
-        stored content and search terms unchanged.
-        """
         with self.connect() as conn:
             try:
                 with conn:

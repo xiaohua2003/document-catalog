@@ -1,2 +1,0 @@
-The local catalog uses SQLite for storage and SQL queries.
-A document can have many terms, and terms can occur at different frequencies.

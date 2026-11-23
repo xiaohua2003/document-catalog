@@ -26,11 +26,6 @@ def supported(file: Path) -> bool:
 
 
 def iter_documents(root: Path):
-    """Produce normalized keys, then absolute file paths in stable order.
-
-    Directory entry errors surface as InputError rather than getting skipped.
-    Stable traversal helps both tests and human investigations of failures.
-    """
     root = check_root(root)
     matches = []
     try:
